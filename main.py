@@ -2,10 +2,12 @@ import tkinter as tk
 from tkinter import ttk
 import calculator_logic as calc
 
-def validate_entry(char):
-    if char in "0123456789.-":
-        return True
-    return False
+def validate_entry():
+    entry_text = entry.get()
+    corrected_text = ''.join(char for char in entry_text if char in "0123456789.-")
+    if entry_text != corrected_text:
+        entry.delete(0, tk.END)
+        entry.insert(0, corrected_text)
 
 def enter_number(number):
     entry.insert(tk.END, number)
@@ -13,11 +15,14 @@ def enter_number(number):
 def set_operation(operation):
     global first
     global oper
-    first = float(entry.get())
+    try:
+        first = float(entry.get())
+    except ValueError:
+        first = 0
     oper = operation
     entry.delete(0, tk.END)
 
-def calc():
+def calculate_result():
     second = float(entry.get())
     if oper == '+':
         result = calc.add(first, second)
@@ -37,11 +42,9 @@ def clear_entry():
 window = tk.Tk()
 window.title("Calculator")
 
-# Создаем валидатор для ввода
-validate_command = (window.register(validate_entry), '%S')
-
-entry = ttk.Entry(validate="key", validatecommand=validate_command, width=20)
+entry = ttk.Entry(width=20)
 entry.grid(row=0, column=0, columnspan=3)
+entry.bind('<KeyRelease>', lambda event: validate_entry())
 
 # Цифровые кнопки
 ttk.Button(text="1", command=lambda: enter_number('1')).grid(row=1, column=0)
@@ -62,10 +65,10 @@ ttk.Button(text="*", command=lambda: set_operation('*')).grid(row=3, column=3)
 ttk.Button(text="/", command=lambda: set_operation('/')).grid(row=4, column=3)
 
 # Кнопка равно и очистки
-ttk.Button(text="=", command=calc).grid(row=4, column=2)
+ttk.Button(text="=", command=calculate_result).grid(row=4, column=2)
 ttk.Button(text="C", command=clear_entry).grid(row=4, column=1)
 
-first = None
-oper = None
+first = 0
+oper = 0
 
 window.mainloop()
